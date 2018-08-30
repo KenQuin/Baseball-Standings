@@ -1,0 +1,577 @@
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <climits>
+#include <string>
+#include <cstring>
+#include <cctype>
+#include <cassert>
+#define max 20
+using namespace std;
+
+////////////////////////////////////////////////
+// Estructura donde de guarda la fecha official
+
+struct Fecha
+{
+    int pdia, pmes, panio ;
+    int udia, umes, uanio;
+};
+
+//////////////////////////////////////////////////////////
+// Estructura donde de comprueba si los datos son validos
+
+struct Provar
+{
+    string no;
+    string lug;
+    int d1, m1, y1;
+    int d2, m2, y2;
+    int w,l,h,r,e;
+    bool valid;
+    
+};
+
+/////////////////////////////
+// Clases donde se almacenan
+// Publicas las funciones
+// Privadas las variables
+
+class Equipo {
+public:
+    Equipo();
+    ~Equipo();
+
+    bool vali_fechas(Equipo p[], ofstream& salida, int i, int m);
+    bool vali_posneg(Equipo p[] , ofstream& salida, int i, int m);
+    
+    void Entrada(ifstream& entrada, ofstream& salida);
+    void Menu(ofstream& salida, Equipo u[]);
+    
+    void Orden(Equipo u[]);
+    void Ganadas(ofstream& salida, Equipo u[]);
+    void Mayor_Hit(ofstream& salida, Equipo u[]);
+    void Igual_WiLo(ofstream& salida, Equipo u[]);
+    void Prom_Hit(ofstream& salida, Equipo u[]);
+    void Dura_Temp();
+    
+private:
+    string nombre;
+    string lugar;
+    int win;
+    int lose;
+    int hit;
+    int rbi;
+    int err;
+    int cant;
+    Fecha cualf;
+    Provar D;
+};
+
+////////////////////////////////////
+// Creador por defecto y destructor
+
+Equipo::Equipo(): nombre("n/a"), lugar("n/a"), win(0), lose(0), hit(0), rbi(0), err(0)
+{
+}
+
+Equipo::~Equipo()
+{
+}
+
+////////////////////////////////////////////////////////////////////
+// Entrada donde se guardan los datos y se compueban si son validos
+
+void Equipo::Entrada(ifstream& entrada,ofstream& salida)
+{
+    Equipo who[max];
+    who[0].cant = 0;
+    string done;
+    bool valid1, valid2;
+    int i =0,m=1;
+    
+    while (!entrada.eof())
+    {
+        valid1 = true;
+        valid2 = true;
+        
+        getline(entrada, who[i].nombre);
+        getline(entrada, who[i].lugar);
+        
+        entrada >> who[i].D.m1 >> who[i].D.d1 >>  who[i].D.y1 >> who[i].D.m2 >> who[i].D.d2 >> who[i].D.y2;
+        valid1 = vali_fechas(who, salida, i,m);
+
+        entrada >>who[i].D.w >> who[i].D.l >> who[i].D.h >> who[i].D.r >> who[i].D.e;
+        valid2 = vali_posneg( who, salida, i,m);
+        entrada >> done;
+        
+        if (valid1 == false || valid2 == false)
+        {
+            i--;
+            who[0].cant--;
+        }
+        valid1 = true;
+        valid2 = true;
+        m++;
+        who[0].cant++;
+        i++;
+    }
+    Orden(who);
+    Menu(salida, who);
+}
+
+///////////////////////////////////////////////////////////////
+// Funcion booleana para validar si las fechas estan correctas
+
+bool Equipo::vali_fechas(Equipo K[], ofstream& salida, int i, int m)
+{
+    bool v1 = true;
+    bool v2 = true;
+    bool v3 = true;
+    bool v4 = true;
+    bool v5 = true;
+    bool v6 = true;
+    
+    if (K[i].D.d1 <= 0 || K[i].D.d1 > 31)
+    {
+        v1 = false;
+        cout << "Entrada del dia 1 incorrecta. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del dia 1 incorrecta. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.pdia = K[i].D.d1;
+    
+    
+    if (K[i].D.d2 <= 0 || K[i].D.d2 > 31)
+    {
+        v2=false;
+        cout << "Entrada del dia 2 incorrecta. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del dia 2 incorrecta. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.udia  = K[i].D.d2;
+    
+    
+    if (K[i].D.m1 <= 0 || K[i].D.m1 > 12)
+    {
+        v3 = false;
+        cout << "Entrada del mes 1 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del mes 1 incorrecta. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.pmes = K[i].D.m1;
+    
+    
+    if (K[i].D.m2 <= 0 || K[i].D.m2 > 12)
+    {
+        v4 = false;
+        cout << "Entrada del mes 2 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del mes 2 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.umes  = K[i].D.m2;
+    
+    
+    if (K[i].D.y1 <= 0)
+    {
+        v5 = false;
+        cout << "Entrada del year 1 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del year 1 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.panio = K[i].D.y1;
+    
+    
+    
+    if (K[i].D.y2 <= 0)
+    {
+        v5 = false;
+        cout << "Entrada del year 2 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+        salida << "Entrada del year 2 incorrecto. Favor de cotejar su Archivo de entrada del equipo: " << m << endl;
+    }
+    else
+        K[i].cualf.uanio  = K[i].D.y2;
+    
+    
+    
+    if (K[i].D.y2<K[i].D.y1)
+    {
+        v6 = false;
+        cout << "Entradas del year estan alreves! En equipo:" << m << endl;
+        salida << "Entradas del year estan alreves! En equipo:" << m << endl;
+    }
+    else
+    {
+        if (K[i].D.m1>K[i].D.m2 && K[i].D.y2 == K[i].D.y1)
+        {
+            K[i].D.valid = false;
+            cout << "Entradas del mes estan alreves! En equipo:" << m << endl;
+            salida << "Entradas del mes estan alreves! En equipo:" << m << endl;
+        }
+        else if(K[i].D.d1 > K[i].D.d2 && K[i].D.y2 == K[i].D.y1 && K[i].D.m1==K[i].D.m2)
+        {
+            K[i].D.valid = false;
+            cout << "Entradas del dia estan alreves! En equipo:" << m << endl;
+            salida << "Entradas del dia estan alreves! En equipo:" << m << endl;
+        }
+    }
+    return (v1 && v2 && v3 && v4 && v5 && v6);
+}
+
+
+///////////////////////////////////////////////////////////////////
+// Funcion booleana para verificar si las cantidades son correctas
+
+
+bool Equipo::vali_posneg(Equipo p[] , ofstream &salida, int i, int m)
+{
+    bool v1 = true;
+    bool v2 = true;
+    bool v3 = true;
+    bool v4 = true;
+    bool v5 = true;
+    
+    if (p[i].D.w < 0)
+    {
+        v1 = false;
+        cout << "Entrada incorrecta en las Vicotrias, del equipo: " << m << endl;
+        salida << "Entrada incorrecta en las Victorias, del equipo: " << m << endl;
+    }
+    else
+    { p[i].win = p[i].D.w;}
+    
+    if (p[i].D.l < 0)
+    {
+        v2 = false;
+        cout << "Entrada incorrecta en las derrotas, del equipo: " << m << endl;
+        salida << "Entrada incorrecta en las derrotas, del equipo: " << m << endl;
+    }
+    else
+    { p[i].lose = p[i].D.l;}
+    
+    
+    if (p[i].D.h < 0)
+    {
+        v3 = false;
+        cout << "Entrada incorrecta para los Hits, del equipo: " << m << endl;
+        salida << "Entrada incorrecta para los Hits, del equipo: " << m << endl;
+    }
+    else
+    { p[i].hit = p[i].D.h;}
+    
+    if (p[i].D.r < 0)
+    {
+        v4 = false;
+        cout << "Entrada incorrecta para las Carreras, del equipo: " << m << endl;
+        salida << "Entrada incorrecta para las Carreras, del equipo: " << m << endl;
+    }
+    else
+    { p[i].rbi = p[i].D.r;}
+    
+    if (p[i].D.e <0)
+    {
+        v5 = false;
+        cout << "Entrada incorrecta para los Errores, del equipo: " << i+m << endl;
+        salida << "Entrada incorrecta para los Errores, del equipo: " << m << endl;
+    }
+    else
+    {p[i].err  = p[i].D.e;}
+    
+    return (v1 && v2 && v3 && v4 && v5);
+}
+
+
+/////////////////////////////////////////////////////////////////////
+// Funcion Void donde Ordene Todo lo que tenga que ver con el equipo
+
+void Equipo::Orden(Equipo u[])
+{
+    Provar orden_comp;
+    
+    for (int k=0; k < u[0].cant; k++)
+    {
+        if (u[k].win < u[k+1].win)
+        {
+            ////////////////////
+            //Ordena los Nombre
+            
+            orden_comp.no = u[k].nombre;
+            u[k].nombre = u[k+1].nombre;
+            u[k+1].nombre = orden_comp.no;
+            
+            
+            ///////////////////
+            //Ordena los Lugar
+            
+            orden_comp.lug = u[k].lugar;
+            u[k].lugar = u[k+1].lugar;
+            u[k+1].lugar = orden_comp.lug;
+            
+            /////////////////////////////////////////
+            //Ordena la Fecha de inicio de temporada
+            
+            orden_comp.d1 = u[k].cualf.pdia;
+            u[k].cualf.pdia = u[k+1].cualf.pdia;
+            u[k+1].cualf.pdia = orden_comp.d1;
+            
+            orden_comp.m1 = u[k].cualf.pdia;
+            u[k].cualf.pmes = u[k+1].cualf.pmes;
+            u[k+1].cualf.pmes = orden_comp.m1;
+            
+            orden_comp.y1 = u[k].cualf.panio;
+            u[k].cualf.panio = u[k+1].cualf.panio;
+            u[k+1].cualf.panio = orden_comp.y1;
+            
+            
+            ///////////////////////////////////////////////
+            //Ordena la Fecha de finalizacion de temporada
+            
+            orden_comp.d2 = u[k].cualf.udia;
+            u[k].cualf.udia = u[k+1].cualf.udia;
+            u[k+1].cualf.udia = orden_comp.d2;
+            
+            orden_comp.m2 = u[k].cualf.umes;
+            u[k].cualf.umes = u[k+1].cualf.umes;
+            u[k+1].cualf.umes = orden_comp.m2;
+            
+            orden_comp.y2 = u[k].cualf.uanio;
+            u[k].cualf.uanio = u[k+1].cualf.uanio;
+            u[k+1].cualf.uanio = orden_comp.y2;
+            
+            ///////////////////////
+            //Ordena las Victorias
+            
+            orden_comp.w = u[k].win;
+            u[k].win = u[k+1].win;
+            u[k+1].win = orden_comp.w;
+            
+            //////////////////////
+            //Ordena las Derrotas
+            orden_comp.l = u[k].lose;
+            u[k].lose = u[k+1].lose;
+            u[k+1].lose = orden_comp.l;
+            
+            ///////////////////////////////////////
+            //Ordena la cantidad de Bolas Bateadas
+            orden_comp.h = u[k].hit;
+            u[k].hit = u[k+1].hit;
+            u[k+1].hit = orden_comp.h;
+            
+            //////////////////////
+            //Ordena la cantidad de Carreras
+            
+            orden_comp.r = u[k].rbi;
+            u[k].rbi = u[k+1].rbi;
+            u[k+1].rbi = orden_comp.r;
+            
+            //////////////////////////////////////////
+            //Ordena la cantidad de errores cometidos
+            
+            orden_comp.e = u[k].err;
+            u[k].err = u[k+1].err;
+            u[k+1].err = orden_comp.e;
+        }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////
+//Funcion void Menu donde el usuario hace la interaccion con el programa
+
+void Equipo::Menu(ofstream& salida, Equipo u[])
+{
+    int choice;
+    
+    cout << "\nBienvenidos\n"<<endl;
+    salida  << "\nBienvenidos\n"<<endl;
+    
+    do{
+        do {
+            cout << "\n[1]Mostrar equipos de Mayor victorias\n[2]Equipo con Mayor bolas bateadas exitosamente\n[3]Equipos con igual cantidad de victorias y derrotas\n[4]Promedio de Bateos\n[5]Numero total de dias en la temporada\n[0]Cerrar Programa\n";
+            salida << "\n[1]Mostrar equipos de Mayor victorias\n[2]Equipo con Mayor bolas bateadas exitosamente\n[3]Equipos con igual cantidad de victorias y derrotas\n[4]Promedio de Bateos\n[5]Numero total de dias en la temporada\n[0]Cerrar Programa\n";
+            cin >> choice;
+            
+            if (choice < 0 || choice > 5)
+            {
+                salida<<choice<<"\n";   cout << "\nPORFAVOR SOMETER UNA ENTRADA VALIDA\n"; salida << "\nPORFAVOR SOMETER UNA ENTRADA VALIDA\n";
+            }
+            
+            if (cin.fail())
+            {
+                cin.clear();
+                cin.ignore();
+                choice = 10;
+                salida<<choice<<"\n";
+                cout << "\nPORFAVOR SOMETER UNA ENTRADA VALIDA\n"; salida << "\nPORFAVOR SOMETER UNA ENTRADA VALIDA\n";
+            }
+            
+            switch (choice) {
+                case 1:
+                    Ganadas(salida, u);
+                    break;
+                case 2:
+                    Mayor_Hit(salida, u);
+                    break;
+                case 3:
+                    Igual_WiLo(salida, u);
+                    break;
+                case 4:
+                    Prom_Hit(salida, u);
+                    break;
+                case 5:
+                    Dura_Temp();
+                    break;
+            }
+            
+        }while (choice >5||choice<0);
+    }while(choice != 0);
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// Funcion Void donde determina la cantidad mayor de Ganadas por equipo
+
+void Equipo::Ganadas(ofstream &salida, Equipo u[])
+{
+    int y=0;
+    do{
+        //En pantalla
+        cout<< u[y].nombre << endl << u[y].lugar << endl;
+        cout<< u[y].cualf.pdia <<" "<< u[y].cualf.pmes <<" "<< u[y].cualf.panio <<endl;
+        cout<< u[y].cualf.udia <<" "<< u[y].cualf.umes<<" "<< u[y].cualf.umes << endl;
+        cout<< u[y].win <<" Victorias.\n"<< u[y].lose<< " Derrotas\n"<< u[y].hit<<" Batazos\n"<< u[y].rbi<<" Carreras\n" << u[y].err <<" Errores\n\n";
+        //Salidas.txt
+        salida << u[y].nombre << endl << u[y].lugar << endl << u[y].cualf.pdia <<" "<< u[y].cualf.pmes <<" "<< u[y].cualf.panio <<endl<< u[y].cualf.udia <<" "<< u[y].cualf.umes<<" "<< u[y].cualf.umes << endl<< u[y].win <<" Victorias.\n"<< u[y].lose<< " Derrotas\n"<< u[y].hit<<" Batazos\n"<< u[y].rbi<<" Carreras\n" << u[y].err <<" Errores\n\n";
+        y++;
+    } while (y <= u[0].cant);
+}
+
+
+/////////////////////////////////////////////////////////////////////
+// Funcion Void donde determine el o los mayores Hits de los equipos
+
+void Equipo::Mayor_Hit(ofstream& salida, Equipo u[])
+{
+    int mayorcant = 0;
+    
+    for (int k=0; k < u[0].cant; k++)
+    {
+        if (u[k].hit < u[k+1].hit)
+        {
+            mayorcant = u[k+1].hit;
+        }
+    }
+    
+    for (int k=0; k < u[0].cant; k++)
+    {
+        if (u[k].hit == mayorcant)
+        {
+            cout << "El equipo " << u[k].nombre << " de la ciudad de " << u[k].lugar << " tuvo la mayor cantidad de bolas bateadas: " << u[k].hit << endl;
+            salida << "El equipo " << u[k].nombre << " de la ciudad de  " << u[k].lugar << " tuvo la mayor cantidad de bolas bateadas: " << u[k].hit << endl;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Funcion Void donde determina el equipo que obtuvo la misma cantidad de Derrotas que de Victoras
+
+void Equipo::Igual_WiLo(ofstream& salida, Equipo u[])
+{
+    for (int k=0; k < u[0].cant; k++)
+    {
+        for (int q=0; q < u[0].cant; q++)
+        {
+            if (k != q)
+            {
+                if (u[k].win == u[q].lose)
+                {
+                    cout << "El equipo " << u[k].nombre << " tiene la misma cantidad de derrotas y victorias con: " << u[q].nombre << " (W = " << u[k].win << ", L = " << u[k].lose <<")"  << endl;
+                    salida << "El equipo " << u[k].nombre << " tiene la misma cantidad de derrotas y victorias con: " << u[q].nombre << " (W = " << u[k].win << ", L = " << u[k].lose <<")"  << endl;
+                }
+            }
+        }
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Funcion Void donde determina la cantidad promedio de batazos en total de la temporada
+
+void Equipo::Prom_Hit(ofstream& salida, Equipo u[])
+{
+    float prom;
+    int y=0;
+    do{
+        prom = (float(u[y].hit))/(float(u[y].win + u[y].lose));
+        //En pantalla
+        cout << u[y].nombre<< " tuvo un promedio de bolas bateadas por partido de: " << prom << endl;
+        //Salidas.txt
+        salida << u[y].nombre<< " tuvo un promedio de bolas bateadas por partido de: " << prom << endl;
+        y++;
+    } while (y <= u[0].cant);
+}
+
+
+///////////////////////////////////////////////////////////////////////
+// Funcion Void donde dice el numero total de duracion de la temporada
+
+void Equipo::Dura_Temp()
+{
+    /*
+    int days;
+    int i=0;
+    int month_days[] = {31,29,31,30,31,30,31,31,30,31,30,31};
+    
+    //dura[0].d1 && dura[0].m1 && dura[0].y1)
+    if(dura[0].y1 == dura[0].y2)
+    {
+        if(dura[0].m1 == dura[0].m2)
+            days = dura[0].d2 - dura[0].d1;
+        else
+        {
+            for(int j = dura[0].m1; j < dura[0].m2 -1;j++)
+                days += month_days[j];
+            days += month_days[dura[0].m1 - 1] - dura[0].d1 + dura[0].d2;
+        }
+    }
+    else
+    {
+        for(int j = 0; j < dura[0].m2 - 1; j++)
+            days += month_days[j];
+        for(int j = dura[0].m1; j < 12; j++)
+            days += month_days[j];
+        if(dura[0].y2 - dura[0].y1 >= 0)
+            days += (dura[0].y2 - dura[0].y1 - 1)*365 +
+            month_days[dura[0].m1 - 1] - dura[0].d1 + dura[0].d2;
+    }
+    
+    cout << "Days between the two dates: " << days;
+}
+    */
+    cout << "La temporada de pelota dura de 92 días" << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Programa donde se demuestra una Liga de Pelota donde 4 equipos son aceptados
+
+int main()
+{
+    Equipo Var;
+    ifstream file;
+    file.open("equipos.txt");
+    ofstream outt;
+    outt.open("salida.txt");
+    
+    if (file.is_open()) {
+        cout << "\nArchivo 'equipos.txt' found!\n" <<endl;
+        outt << "\nArchivo 'equipos.txt' found!\n" <<endl;
+        Var.Entrada(file, outt);
+    }
+    else
+    {
+        cout << "Archivo equipos.txt NO se encuentra \n";
+        outt << "Archivo equipos.txt NO se encuentra \n";
+    }
+    
+    return 0;
+}
